@@ -1,10 +1,7 @@
 FROM php:7.4-fpm-buster
 
-#skip deprecation warning for node 8
-ENV NODE_NO_DEPRECATION 1
-ENV NODE_NO_WARNINGS 1
+ENV NVM_VERSION=v0.35.3
 
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends --no-install-suggests \
 		build-essential \
@@ -24,9 +21,6 @@ RUN apt-get update \
 		ffmpeg \
 		sudo \
 		dumb-init \
-		# install node and npm
-		nodejs \
-		npm \
 	&& pecl install redis \
 	&& docker-php-ext-configure gd \
 		--with-freetype \
@@ -45,10 +39,13 @@ RUN apt-get update \
 	 bcmath \
 	 exif \
 	&& docker-php-ext-enable opcache exif redis \
-	# install yarn
-	&& npm install -g yarn \
+    # install nvm
+	&& curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash \
     && apt-get autoclean -y \
     && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/pear/
+
+# install node 8 LTS and yarn
+RUN	/bin/bash -ic "nvm install 8 --lts && nvm use 8 && npm install -g yarn"
 
 # Install composer
 WORKDIR /home/composer
